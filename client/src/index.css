@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  /* High-contrast focus ring for keyboard-driven billing */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent-500 ring-offset-1;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+  .input-base {
+    @apply h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm
+      text-slate-900 placeholder:text-slate-400
+      focus:border-accent-500 focus:ring-2 focus:ring-accent-200 disabled:bg-slate-100;
+  }
+  .label-base {
+    @apply mb-1 block text-sm font-medium text-slate-700;
+  }
+}
+
+/* Respect reduced-motion: disable non-essential animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Print: only the invoice/printable area shows */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
