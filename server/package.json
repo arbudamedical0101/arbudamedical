@@ -2,6 +2,9 @@
   "name": "pharmacy-server",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "description": "Express + TypeScript + Mongoose API for retail pharmacy management",
   "main": "dist/index.js",
   "scripts": {
