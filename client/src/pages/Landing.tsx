@@ -258,14 +258,28 @@ export default function Landing() {
           </span>
 
           {/* the shop banner — shown full, uncropped, framed like the real sign */}
-          <div className="w-full animate-scale-in rounded-2xl bg-white p-2 shadow-2xl ring-4 ring-brand-magenta sm:p-3 sm:ring-8">
+          <div className="w-full animate-scale-in rounded-2xl bg-white p-0 shadow-2xl ring-4 ring-brand-magenta sm:p-3 sm:ring-8">
             {imgOk ? (
-              <img
-                src="/KP%20Medical.png"
-                alt={`${store.storeName} banner`}
-                className="h-auto w-full rounded-xl object-contain"
-                onError={() => setImgOk(false)}
-              />
+              // <img
+              //   src="/KP%20Medical.png"
+              //   alt={`${store.storeName} banner`}
+              //   className="h-auto w-full rounded-xl object-contain"
+              //   onError={() => setImgOk(false)}
+              // />
+            <picture>
+                <source
+                  media="(max-width: 768px)"
+                  srcSet="/KP_Medical_phone.jpeg"
+                />
+
+                <img
+                  src="/KP%20Medical.png"
+                  alt={`${store.storeName} banner`}
+                  className="w-full rounded-xl object-cover"
+                  onError={() => setImgOk(false)}
+                />
+            </picture>
+
             ) : (
               <div className="flex aspect-[21/9] w-full flex-col items-center justify-center gap-3 rounded-xl bg-gradient-to-br from-brand-blue via-brand-magenta to-brand-red text-white">
                 <Store className="h-20 w-20 animate-float" />
