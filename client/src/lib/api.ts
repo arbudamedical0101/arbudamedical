@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
+const baseURL = (import.meta.env.VITE_API_URL || 'https://arbudamedical-backend-a5fuue8iy-arbuda.vercel.app') + '/api';
 
 export const api = axios.create({ baseURL });
 
