@@ -31,16 +31,18 @@
 //   console.error('[server] failed to start', err);
 //   process.exit(1);
 // });
+import serverless from "serverless-http";
 import { createApp } from "../src/app";
 import { connectDB } from "../src/config/db";
 
-let app: any;
+let handler: any;
 
-export default async function handler(req: any, res: any) {
-  if (!app) {
+export default async function (req: any, res: any) {
+  if (!handler) {
     await connectDB();
-    app = createApp();
+    const app = createApp();
+    handler = serverless(app);
   }
 
-  return app(req, res);
+  return handler(req, res);
 }
