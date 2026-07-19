@@ -7,6 +7,7 @@
     "dev": "concurrently -n server,client -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix server install && npm run build --prefix server && npm --prefix client install && npm run build --prefix client",
     "install:all": "npm install && npm --prefix server install && npm --prefix client install",
     "seed": "npm --prefix server run seed"
   },
@@ -14,6 +15,7 @@
     "concurrently": "^9.1.0"
   },
   "dependencies": {
-    "@vercel/node": "^5.8.26"
+    "@vercel/node": "^5.8.26",
+    "serverless-http": "^4.0.0"
   }
 }
