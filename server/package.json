@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "description": "Express + TypeScript + Mongoose API for retail pharmacy management",
   "main": "dist/index.js",
