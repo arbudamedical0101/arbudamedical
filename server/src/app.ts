@@ -17,7 +17,22 @@ export function createApp() {
   const app = express();
 
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' }, contentSecurityPolicy: false }));
-  app.use(cors({ origin: env.clientOrigin, credentials: true }));
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      const allowed = [env.clientOrigin, 'http://localhost:5173', 'http://localhost:3000'];
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin ${origin} not allowed`));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
+  };
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions)); // Handle all OPTIONS preflight requests
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true }));
   if (!env.isProd) app.use(morgan('dev'));
