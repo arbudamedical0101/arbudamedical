@@ -2,28 +2,26 @@
   "version": 2,
   "installCommand": "npm install --include=dev",
   "outputDirectory": "dist",
+  "trailingSlash": false,
   "functions": {
     "api/index.ts": {
       "memory": 1024,
       "maxDuration": 30
     }
   },
-  "routes": [
+  "headers": [
     {
-      "src": "/(.*)",
-      "methods": ["OPTIONS"],
-      "headers": {
-        "Access-Control-Allow-Origin": "https://arbudamedical.vercel.app",
-        "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type,Authorization",
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Max-Age": "86400"
-      },
-      "status": 204
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index"
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://arbudamedical.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type,Authorization" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Max-Age", "value": "86400" }
+      ]
     }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
   ]
 }
