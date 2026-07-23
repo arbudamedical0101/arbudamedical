@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     tokenStore.clear();
     setUser(null);
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   // Admin can do everything; otherwise role must be in the list.

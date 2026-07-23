@@ -481,7 +481,7 @@ export default function Landing() {
           </div>
           <div className="flex flex-col items-center gap-2 sm:items-end">
             <Link to="/login" className="inline-flex items-center gap-2 rounded-full bg-brand-yellow px-5 py-2 text-sm font-semibold text-brand-blue transition-colors hover:bg-white">
-              Staff / Management Portal
+              <ShieldCheck className="h-4 w-4" /> Management Portal
             </Link>
             <p className="text-xs text-white/60">© {store.storeName}. All rights reserved.</p>
             <p className="text-xs font-medium text-brand-yellow/90">Developed and maintained by Sachin Suthar</p>
