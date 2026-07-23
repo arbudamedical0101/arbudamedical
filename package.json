@@ -13,9 +13,5 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
-  },
-  "dependencies": {
-    "@vercel/node": "^5.8.26",
-    "serverless-http": "^4.0.0"
   }
 }
