@@ -10,7 +10,24 @@ export function createApp() {
   const app = express();
 
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-  app.use(cors({ origin: env.clientOrigin, credentials: true }));
+
+  // Allowed origins: CLIENT_ORIGIN may be a comma-separated list. Normalise both
+  // the configured values and the incoming Origin by stripping any trailing
+  // slash, so "https://site.app/" and "https://site.app" are treated the same.
+  const normalise = (o: string) => o.trim().replace(/\/+$/, '');
+  const allowedOrigins = env.clientOrigin.split(',').map(normalise).filter(Boolean);
+  app.use(
+    cors({
+      origin(origin, callback) {
+        // Allow non-browser requests (curl, health checks) that send no Origin.
+        if (!origin || allowedOrigins.includes(normalise(origin))) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+      },
+      credentials: true,
+    }),
+  );
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true }));
   if (!env.isProd) app.use(morgan('dev'));
