@@ -16,7 +16,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   // When true, boot an in-memory MongoDB replica set (no install needed).
   useMemoryDb: process.env.USE_MEMORY_DB === 'true',
-  clientOrigin: process.env.CLIENT_ORIGIN ?? 'https://arbudamedical.vercel.app',
+  clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
   mongoUri: required('MONGODB_URI', 'mongodb://localhost:27017/pharmacy?replicaSet=rs0'),
   jwt: {
     accessSecret: required('JWT_ACCESS_SECRET', 'dev-access-secret'),

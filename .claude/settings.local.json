@@ -7,7 +7,22 @@
       "PowerShell($h = Invoke-RestMethod http://localhost:5000/api/health; \"health: $\\($h.status\\)\"; $s = Invoke-RestMethod http://localhost:5000/api/settings/public; \"public settings -> name: $\\($s.data.storeName\\) | address: $\\($s.data.address\\)\"; $c = Invoke-WebRequest http://localhost:5173/ -UseBasicParsing; \"client / -> HTTP $\\($c.StatusCode\\)\")",
       "PowerShell(try { Resolve-DnsName -Type TXT -Name cluster0.4uoluap.mongodb.net -ErrorAction Stop | Select-Object -ExpandProperty Strings } catch { Write-Output \"TXT FAIL: $\\($_.Exception.Message\\)\" })",
       "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:5173/\" -UseBasicParsing -TimeoutSec 10; Write-Output \"CLIENT HTTP $\\($r.StatusCode\\) | title present: $\\($r.Content -match '<title'\\)\" } catch { Write-Output \"CLIENT FAIL: $\\($_.Exception.Message\\)\" })",
-      "PowerShell(Get-Content \"C:\\\\Users\\\\SACHIN~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-SachinSuthar-Downloads-Medical-Website\\\\cb9d7865-62dd-403a-bc1a-91438b2c7f71\\\\tasks\\\\bc3wr17aa.output\" | Select-String -Pattern \"error|Error|fail|Fail|warn|Cannot|Unexpected|overlay|transform\" | Where-Object { $_ -notmatch \"http proxy error|ECONNREFUSED|failed to start Mongoose|whitelist|isn't whitelisted|access the database\" } | Select-Object -Last 30)"
+      "PowerShell(Get-Content \"C:\\\\Users\\\\SACHIN~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-SachinSuthar-Downloads-Medical-Website\\\\cb9d7865-62dd-403a-bc1a-91438b2c7f71\\\\tasks\\\\bc3wr17aa.output\" | Select-String -Pattern \"error|Error|fail|Fail|warn|Cannot|Unexpected|overlay|transform\" | Where-Object { $_ -notmatch \"http proxy error|ECONNREFUSED|failed to start Mongoose|whitelist|isn't whitelisted|access the database\" } | Select-Object -Last 30)",
+      "Bash(npm -v)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(node -e \"setTimeout\\(\\(\\)=>{},8000\\)\")",
+      "Bash(node -e \"setTimeout\\(\\(\\)=>{},10000\\)\")",
+      "Bash(node -e \"setTimeout\\(\\(\\)=>{},15000\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(curl -s --max-time 8 https://api.ipify.org)",
+      "Bash(node -e \"setTimeout\\(\\(\\)=>{},25000\\)\")",
+      "Bash(curl -s --max-time 10 -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@pharmacy.local\",\"password\":\"Admin@123\"}')",
+      "Bash(node -e \"setTimeout\\(\\(\\)=>{},12000\\)\")",
+      "Bash(curl -s --max-time 12 -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@pharmacy.local\",\"password\":\"Admin@123\"}')",
+      "Bash(node -e \"setTimeout\\(\\(\\)=>{},5000\\)\")",
+      "Bash(curl -s --max-time 12 -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -H \"Origin: http://localhost:5173\" -d '{\"email\":\"admin@pharmacy.local\",\"password\":\"Admin@123\"}' -i)",
+      "Bash(git add *)"
     ]
   }
 }
