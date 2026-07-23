@@ -22,7 +22,17 @@
       "Bash(curl -s --max-time 12 -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@pharmacy.local\",\"password\":\"Admin@123\"}')",
       "Bash(node -e \"setTimeout\\(\\(\\)=>{},5000\\)\")",
       "Bash(curl -s --max-time 12 -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -H \"Origin: http://localhost:5173\" -d '{\"email\":\"admin@pharmacy.local\",\"password\":\"Admin@123\"}' -i)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(timeout 12 node dist/index.js)",
+      "Bash(curl -s --max-time 30 -X POST https://arbudamedical.onrender.com/api/auth/login -H \"Content-Type: application/json\" -H \"Origin: https://arbudamedical.onrender.com\" -d '{\"email\":\"admin@pharmacy.local\",\"password\":\"Admin@123\"}' -i)",
+      "Bash(curl -s --max-time 30 -X OPTIONS https://arbudamedical.onrender.com/api/auth/login -H \"Origin: https://arbudamedical.vercel.app\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type\" -i)",
+      "Bash(curl -s --max-time 30 -X POST https://arbudamedical.onrender.com/api/auth/login -H \"Content-Type: application/json\" -H \"Origin: https://arbudamedical.vercel.app\" -d '{\"email\":\"admin@pharmacy.local\",\"password\":\"Admin@123\"}' -i)",
+      "Bash(git rm *)",
+      "Bash(node -e \"setTimeout\\(\\(\\)=>{},90000\\)\")",
+      "Bash(git rev-list *)"
     ]
   }
 }
