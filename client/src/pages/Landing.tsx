@@ -228,14 +228,8 @@ export default function Landing() {
             </div>
           </div>
           <nav className="flex items-center gap-2 sm:gap-6">
-            <a href="#products" className="hidden text-sm font-semibold text-brand-blue transition-colors hover:text-brand-magenta sm:block">Products</a>
-            <a href="#visit" className="hidden text-sm font-semibold text-brand-blue transition-colors hover:text-brand-magenta sm:block">Visit Us</a>
-            <Link
-              to="/login"
-              className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-brand-blue px-5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-blue-dark hover:shadow-md"
-            >
-              Management Portal
-            </Link>
+            <a href="#products" className="text-sm font-semibold text-brand-blue transition-colors hover:text-brand-magenta">Products</a>
+            <a href="#visit" className="text-sm font-semibold text-brand-blue transition-colors hover:text-brand-magenta">Visit Us</a>
           </nav>
         </div>
       </header>
