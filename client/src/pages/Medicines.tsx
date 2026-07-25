@@ -68,7 +68,17 @@ export default function Medicines() {
         { name: 'hsnCode', label: 'HSN Code' },
         { name: 'gstRate', label: 'GST %', type: 'number', required: true, defaultValue: 12, step: '0.01' },
         { name: 'packSize', label: 'Pack size', hint: 'e.g. 10 tablets' },
-        { name: 'unit', label: 'Unit', defaultValue: 'strip' },
+        {
+          name: 'unit',
+          label: 'Unit',
+          type: 'select',
+          defaultValue: 'strip',
+          options: [
+            { value: 'strip', label: 'Strip' },
+            { value: 'syrup', label: 'Syrup' },
+            { value: 'piece', label: 'Piece' },
+          ],
+        },
         { name: 'barcode', label: 'Barcode' },
         { name: 'reorderLevel', label: 'Reorder level', type: 'number', defaultValue: 10 },
         { name: 'rackLocation', label: 'Rack location' },

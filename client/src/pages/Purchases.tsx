@@ -225,7 +225,13 @@ function QuickAddMedicine({ onClose, onCreated }: { onClose: () => void; onCreat
           </Field>
           <Field label="GST %"><Input type="number" step="0.01" value={gstRate} onChange={(e) => setGstRate(e.target.value)} /></Field>
         </div>
-        <Field label="Unit" hint="e.g. strip, bottle, box"><Input value={unit} onChange={(e) => setUnit(e.target.value)} /></Field>
+        <Field label="Unit">
+          <Select value={unit} onChange={(e) => setUnit(e.target.value)}>
+            <option value="strip">Strip</option>
+            <option value="syrup">Syrup</option>
+            <option value="piece">Piece</option>
+          </Select>
+        </Field>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button loading={save.isPending} onClick={() => save.mutate()} disabled={!name.trim()}>Add medicine</Button>
