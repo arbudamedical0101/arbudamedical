@@ -38,6 +38,8 @@ export function CrudResource<T extends { _id: string }>({
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<T | null>(null);
   const [creating, setCreating] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [conflictMsg, setConflictMsg] = useState<string | null>(null);
 
   const key = [endpoint, { search, page }];
   const { data, isLoading } = useQuery({
@@ -62,13 +64,31 @@ export function CrudResource<T extends { _id: string }>({
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => (await api.delete(`${endpoint}/${id}`)).data,
+    mutationFn: async ({ id, force }: { id: string; force?: boolean }) =>
+      (await api.delete(`${endpoint}/${id}`, { params: force ? { force: true } : {} })).data,
     onSuccess: () => {
       toast.success('Deleted');
+      setConfirmId(null);
+      setConflictMsg(null);
       invalidate();
     },
-    onError: (e) => toast.error(apiError(e)),
+    onError: (e) => {
+      const err = e as { response?: { status?: number } };
+      // 409 = server refused because the record still has stock/links.
+      // Keep the dialog open and offer a "delete anyway" (force) action.
+      if (err.response?.status === 409) {
+        setConflictMsg(apiError(e));
+      } else {
+        toast.error(apiError(e));
+        setConfirmId(null);
+      }
+    },
   });
+
+  const closeConfirm = () => {
+    setConfirmId(null);
+    setConflictMsg(null);
+  };
 
   const allColumns: Column<T>[] = [...columns];
   if (canManage) {
@@ -85,7 +105,7 @@ export function CrudResource<T extends { _id: string }>({
           {canDelete && (
             <button
               className="rounded-lg p-2 text-red-500 hover:bg-red-50"
-              onClick={() => window.confirm('Delete this record?') && remove.mutate(row._id)}
+              onClick={() => { setConflictMsg(null); setConfirmId(row._id); }}
               aria-label="Delete"
             >
               <Trash2 className="h-4 w-4" />
@@ -142,6 +162,24 @@ export function CrudResource<T extends { _id: string }>({
           }}
           onSubmit={(payload) => save.mutate(payload)}
         />
+      )}
+
+      {confirmId && (
+        <Modal open onClose={closeConfirm} title={conflictMsg ? 'Delete anyway?' : 'Confirm delete'}>
+          <p className="text-sm text-slate-600">
+            {conflictMsg ?? 'Are you sure you want to delete this record? This action cannot be undone.'}
+          </p>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="outline" onClick={closeConfirm}>Cancel</Button>
+            <Button
+              variant="danger"
+              loading={remove.isPending}
+              onClick={() => remove.mutate({ id: confirmId, force: Boolean(conflictMsg) })}
+            >
+              {conflictMsg ? 'Delete anyway' : 'Delete'}
+            </Button>
+          </div>
+        </Modal>
       )}
     </div>
   );

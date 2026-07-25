@@ -49,10 +49,16 @@ export const updateMedicine = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const deleteMedicine = asyncHandler(async (req: Request, res: Response) => {
+  const force = req.query.force === 'true';
   const inStock = await Batch.exists({ medicineId: req.params.id, qtyInStock: { $gt: 0 } });
-  if (inStock) throw ApiError.conflict('Cannot delete a medicine that still has stock. Deactivate it instead.');
+  if (inStock && !force) {
+    throw ApiError.conflict('This medicine still has stock. Deleting it will also remove its batches and stock.');
+  }
   const medicine = await Medicine.findByIdAndDelete(req.params.id);
   if (!medicine) throw ApiError.notFound('Medicine not found');
-  await recordAudit({ user: req.user, action: 'medicine.delete', entity: 'Medicine', entityId: String(req.params.id) });
+  // Remove the medicine's batches too, so no orphaned stock is left behind
+  // (this is what makes valuation/alerts reflect the deletion).
+  await Batch.deleteMany({ medicineId: req.params.id });
+  await recordAudit({ user: req.user, action: 'medicine.delete', entity: 'Medicine', entityId: String(req.params.id), meta: { force } });
   res.json({ data: { id: req.params.id } });
 });
