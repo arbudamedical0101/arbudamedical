@@ -55,6 +55,26 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
   const { data: suppliers } = useQuery({ queryKey: ['/suppliers', 'all'], queryFn: async () => (await api.get('/suppliers', { params: { limit: 200 } })).data });
   const { data: medicines } = useQuery({ queryKey: ['/medicines', 'all'], queryFn: async () => (await api.get('/medicines', { params: { limit: 500 } })).data });
 
+  // Quick-add dialogs so a missing supplier/medicine can be created inline.
+  const [addSupplier, setAddSupplier] = useState(false);
+  const [addMedFor, setAddMedFor] = useState<number | null>(null);
+
+  const appendToCache = (key: string, item: unknown) =>
+    qc.setQueryData([key, 'all'], (old: { data?: unknown[] } | undefined) =>
+      old ? { ...old, data: [...(old.data ?? []), item] } : old,
+    );
+
+  const handleSupplierCreated = (s: { _id: string; name: string }) => {
+    appendToCache('/suppliers', s);
+    qc.invalidateQueries({ queryKey: ['/suppliers'] });
+    setSupplierId(s._id);
+  };
+  const handleMedicineCreated = (i: number, m: { _id: string; name: string; gstRate: number }) => {
+    appendToCache('/medicines', m);
+    qc.invalidateQueries({ queryKey: ['/medicines'] });
+    setLine(i, { medicineId: m._id, gstRate: m.gstRate ?? 12 });
+  };
+
   const setLine = (i: number, patch: Partial<PLine>) => setLines((p) => p.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   const total = lines.reduce((a, l) => a + l.qty * l.purchaseRate * (1 + l.gstRate / 100), 0);
 
@@ -72,10 +92,15 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
     <Modal open onClose={onClose} title="New Purchase (GRN)" wide>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Field label="Supplier">
-          <Select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} required>
-            <option value="">Select supplier…</option>
-            {suppliers?.data?.map((s: { _id: string; name: string }) => <option key={s._id} value={s._id}>{s.name}</option>)}
-          </Select>
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <Select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} required>
+                <option value="">Select supplier…</option>
+                {suppliers?.data?.map((s: { _id: string; name: string }) => <option key={s._id} value={s._id}>{s.name}</option>)}
+              </Select>
+            </div>
+            <Button type="button" variant="outline" className="shrink-0" title="Add new supplier" onClick={() => setAddSupplier(true)}><Plus className="h-4 w-4" /></Button>
+          </div>
         </Field>
         <Field label="Invoice No"><Input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} required /></Field>
         <Field label="Invoice Date"><Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} required /></Field>
@@ -91,10 +116,15 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="col-span-2 sm:col-span-4">
                 <Field label="Medicine">
-                  <Select value={l.medicineId} onChange={(e) => { const m = medicines?.data?.find((x: { _id: string }) => x._id === e.target.value); setLine(i, { medicineId: e.target.value, gstRate: m?.gstRate ?? 12 }); }}>
-                    <option value="">Select medicine…</option>
-                    {medicines?.data?.map((m: { _id: string; name: string }) => <option key={m._id} value={m._id}>{m.name}</option>)}
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Select value={l.medicineId} onChange={(e) => { const m = medicines?.data?.find((x: { _id: string }) => x._id === e.target.value); setLine(i, { medicineId: e.target.value, gstRate: m?.gstRate ?? 12 }); }}>
+                        <option value="">Select medicine…</option>
+                        {medicines?.data?.map((m: { _id: string; name: string }) => <option key={m._id} value={m._id}>{m.name}</option>)}
+                      </Select>
+                    </div>
+                    <Button type="button" variant="outline" className="shrink-0" title="Add new medicine" onClick={() => setAddMedFor(i)}><Plus className="h-4 w-4" /> New</Button>
+                  </div>
                 </Field>
               </div>
               <Field label="Batch No"><Input placeholder="e.g. AB123" value={l.batchNo} onChange={(e) => setLine(i, { batchNo: e.target.value })} /></Field>
@@ -117,6 +147,89 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
       <div className="mt-3 flex justify-end gap-2">
         <Button variant="outline" onClick={onClose}>Cancel</Button>
         <Button loading={save.isPending} onClick={() => save.mutate()} disabled={!supplierId || !invoiceNo}>Save & Stock-in</Button>
+      </div>
+
+      {addSupplier && <QuickAddSupplier onClose={() => setAddSupplier(false)} onCreated={handleSupplierCreated} />}
+      {addMedFor !== null && (
+        <QuickAddMedicine
+          onClose={() => setAddMedFor(null)}
+          onCreated={(m) => handleMedicineCreated(addMedFor, m)}
+        />
+      )}
+    </Modal>
+  );
+}
+
+function QuickAddSupplier({ onClose, onCreated }: { onClose: () => void; onCreated: (s: { _id: string; name: string }) => void }) {
+  const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
+  const [gstin, setGstin] = useState('');
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const body: Record<string, unknown> = { name: name.trim() };
+      if (contact.trim()) body.contact = contact.trim();
+      if (gstin.trim()) body.gstin = gstin.trim();
+      return (await api.post('/suppliers', body)).data.data as { _id: string; name: string };
+    },
+    onSuccess: (s) => { toast.success('Supplier added'); onCreated(s); },
+    onError: (e) => toast.error(apiError(e)),
+  });
+
+  return (
+    <Modal open onClose={onClose} title="Add Supplier">
+      <div className="space-y-4">
+        <Field label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} autoFocus required /></Field>
+        <Field label="Contact number"><Input value={contact} onChange={(e) => setContact(e.target.value)} /></Field>
+        <Field label="GSTIN"><Input value={gstin} onChange={(e) => setGstin(e.target.value)} /></Field>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button loading={save.isPending} onClick={() => save.mutate()} disabled={!name.trim()}>Add supplier</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function QuickAddMedicine({ onClose, onCreated }: { onClose: () => void; onCreated: (m: { _id: string; name: string; gstRate: number }) => void }) {
+  const [name, setName] = useState('');
+  const [schedule, setSchedule] = useState('OTC');
+  const [gstRate, setGstRate] = useState('12');
+  const [unit, setUnit] = useState('strip');
+
+  const save = useMutation({
+    mutationFn: async () => {
+      return (await api.post('/medicines', {
+        name: name.trim(),
+        schedule,
+        gstRate: Number(gstRate) || 0,
+        unit: unit.trim() || 'strip',
+      })).data.data as { _id: string; name: string; gstRate: number };
+    },
+    onSuccess: (m) => { toast.success('Medicine added'); onCreated(m); },
+    onError: (e) => toast.error(apiError(e)),
+  });
+
+  return (
+    <Modal open onClose={onClose} title="Add Medicine">
+      <div className="space-y-4">
+        <Field label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} autoFocus required /></Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Drug Schedule">
+            <Select value={schedule} onChange={(e) => setSchedule(e.target.value)}>
+              <option value="OTC">OTC (over the counter)</option>
+              <option value="H">Schedule H</option>
+              <option value="H1">Schedule H1</option>
+              <option value="X">Schedule X</option>
+            </Select>
+          </Field>
+          <Field label="GST %"><Input type="number" step="0.01" value={gstRate} onChange={(e) => setGstRate(e.target.value)} /></Field>
+        </div>
+        <Field label="Unit" hint="e.g. strip, bottle, box"><Input value={unit} onChange={(e) => setUnit(e.target.value)} /></Field>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button loading={save.isPending} onClick={() => save.mutate()} disabled={!name.trim()}>Add medicine</Button>
+        </div>
       </div>
     </Modal>
   );
