@@ -132,8 +132,7 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
               <Field label="Quantity"><Input type="number" placeholder="Qty" value={l.qty} onChange={(e) => setLine(i, { qty: Number(e.target.value) })} /></Field>
               <Field label="GST %"><Input type="number" placeholder="GST %" value={l.gstRate} onChange={(e) => setLine(i, { gstRate: Number(e.target.value) })} /></Field>
               <Field label="Purchase Rate (₹)"><Input type="number" step="0.01" placeholder="Cost / unit" value={l.purchaseRate} onChange={(e) => setLine(i, { purchaseRate: Number(e.target.value) })} /></Field>
-              <Field label="MRP (₹)"><Input type="number" step="0.01" placeholder="MRP / unit" value={l.mrp} onChange={(e) => setLine(i, { mrp: Number(e.target.value) })} /></Field>
-              <Field label="Sale Rate (₹)"><Input type="number" step="0.01" placeholder="Selling / unit" value={l.saleRate} onChange={(e) => setLine(i, { saleRate: Number(e.target.value) })} /></Field>
+              <Field label="MRP / Sale Rate (₹)" hint="Sale price = MRP"><Input type="number" step="0.01" placeholder="MRP / unit" value={l.mrp} onChange={(e) => { const v = Number(e.target.value); setLine(i, { mrp: v, saleRate: v }); }} /></Field>
             </div>
           </div>
         ))}
