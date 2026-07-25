@@ -90,18 +90,20 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="col-span-2 sm:col-span-4">
-                <Select value={l.medicineId} onChange={(e) => { const m = medicines?.data?.find((x: { _id: string }) => x._id === e.target.value); setLine(i, { medicineId: e.target.value, gstRate: m?.gstRate ?? 12 }); }}>
-                  <option value="">Select medicine…</option>
-                  {medicines?.data?.map((m: { _id: string; name: string }) => <option key={m._id} value={m._id}>{m.name}</option>)}
-                </Select>
+                <Field label="Medicine">
+                  <Select value={l.medicineId} onChange={(e) => { const m = medicines?.data?.find((x: { _id: string }) => x._id === e.target.value); setLine(i, { medicineId: e.target.value, gstRate: m?.gstRate ?? 12 }); }}>
+                    <option value="">Select medicine…</option>
+                    {medicines?.data?.map((m: { _id: string; name: string }) => <option key={m._id} value={m._id}>{m.name}</option>)}
+                  </Select>
+                </Field>
               </div>
-              <Input placeholder="Batch no" value={l.batchNo} onChange={(e) => setLine(i, { batchNo: e.target.value })} />
-              <Input type="date" value={l.expiry} onChange={(e) => setLine(i, { expiry: e.target.value })} />
-              <Input type="number" placeholder="Qty" value={l.qty} onChange={(e) => setLine(i, { qty: Number(e.target.value) })} />
-              <Input type="number" placeholder="GST %" value={l.gstRate} onChange={(e) => setLine(i, { gstRate: Number(e.target.value) })} />
-              <Input type="number" step="0.01" placeholder="Purchase rate" value={l.purchaseRate} onChange={(e) => setLine(i, { purchaseRate: Number(e.target.value) })} />
-              <Input type="number" step="0.01" placeholder="MRP" value={l.mrp} onChange={(e) => setLine(i, { mrp: Number(e.target.value) })} />
-              <Input type="number" step="0.01" placeholder="Sale rate" value={l.saleRate} onChange={(e) => setLine(i, { saleRate: Number(e.target.value) })} />
+              <Field label="Batch No"><Input placeholder="e.g. AB123" value={l.batchNo} onChange={(e) => setLine(i, { batchNo: e.target.value })} /></Field>
+              <Field label="Expiry Date"><Input type="date" value={l.expiry} onChange={(e) => setLine(i, { expiry: e.target.value })} /></Field>
+              <Field label="Quantity"><Input type="number" placeholder="Qty" value={l.qty} onChange={(e) => setLine(i, { qty: Number(e.target.value) })} /></Field>
+              <Field label="GST %"><Input type="number" placeholder="GST %" value={l.gstRate} onChange={(e) => setLine(i, { gstRate: Number(e.target.value) })} /></Field>
+              <Field label="Purchase Rate (₹)"><Input type="number" step="0.01" placeholder="Cost / unit" value={l.purchaseRate} onChange={(e) => setLine(i, { purchaseRate: Number(e.target.value) })} /></Field>
+              <Field label="MRP (₹)"><Input type="number" step="0.01" placeholder="MRP / unit" value={l.mrp} onChange={(e) => setLine(i, { mrp: Number(e.target.value) })} /></Field>
+              <Field label="Sale Rate (₹)"><Input type="number" step="0.01" placeholder="Selling / unit" value={l.saleRate} onChange={(e) => setLine(i, { saleRate: Number(e.target.value) })} /></Field>
             </div>
           </div>
         ))}
