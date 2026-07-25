@@ -29,6 +29,7 @@ export default function Medicines() {
       endpoint="/medicines"
       canManage={can('pharmacist')}
       canDelete={can('admin')}
+      scanSearch
       searchPlaceholder="Search by name, composition or barcode…"
       columns={[
         {
@@ -80,7 +81,7 @@ export default function Medicines() {
             { value: 'piece', label: 'Piece' },
           ],
         },
-        { name: 'barcode', label: 'Barcode' },
+        { name: 'barcode', label: 'Barcode', scan: true },
         { name: 'reorderLevel', label: 'Reorder level', type: 'number', defaultValue: 10 },
         { name: 'rackLocation', label: 'Rack location' },
       ]}

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ScanLine } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { api, apiError } from '@/lib/api';
 import { Button, Card, Input, Select, Textarea, Field, Modal } from './ui';
+import { Scanner } from './Scanner';
+import { parseGs1 } from '@/lib/gs1';
 import { DataTable, Column } from './DataTable';
 import { PageHeader, Pagination } from './Page';
 
@@ -16,6 +18,7 @@ export interface FormField {
   hint?: string;
   defaultValue?: unknown;
   step?: string;
+  scan?: boolean; // show a camera-scan button that fills this field
 }
 
 interface Props<T extends { _id: string }> {
@@ -28,10 +31,11 @@ interface Props<T extends { _id: string }> {
   canDelete?: boolean;
   searchPlaceholder?: string;
   extraActions?: (row: T) => React.ReactNode;
+  scanSearch?: boolean; // show a camera-scan button next to the search box
 }
 
 export function CrudResource<T extends { _id: string }>({
-  title, subtitle, endpoint, columns, fields, canManage, canDelete, searchPlaceholder, extraActions,
+  title, subtitle, endpoint, columns, fields, canManage, canDelete, searchPlaceholder, extraActions, scanSearch,
 }: Props<T>) {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
@@ -40,6 +44,7 @@ export function CrudResource<T extends { _id: string }>({
   const [creating, setCreating] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [conflictMsg, setConflictMsg] = useState<string | null>(null);
+  const [scanningSearch, setScanningSearch] = useState(false);
 
   const key = [endpoint, { search, page }];
   const { data, isLoading } = useQuery({
@@ -126,17 +131,24 @@ export function CrudResource<T extends { _id: string }>({
 
       <Card className="!p-0">
         <div className="border-b border-slate-100 p-3">
-          <div className="relative max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              className="pl-9"
-              placeholder={searchPlaceholder ?? 'Search…'}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-            />
+          <div className="flex max-w-md gap-2">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                className="pl-9"
+                placeholder={searchPlaceholder ?? 'Search…'}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+            {scanSearch && (
+              <Button variant="outline" className="shrink-0" title="Scan barcode / QR" onClick={() => setScanningSearch(true)}>
+                <ScanLine className="h-4 w-4" /> <span className="hidden sm:inline">Scan</span>
+              </Button>
+            )}
           </div>
         </div>
         <div className="p-3">
@@ -161,6 +173,14 @@ export function CrudResource<T extends { _id: string }>({
             setCreating(false);
           }}
           onSubmit={(payload) => save.mutate(payload)}
+        />
+      )}
+
+      {scanningSearch && (
+        <Scanner
+          title="Scan barcode / QR"
+          onDetected={(raw) => { setSearch(parseGs1(raw).code); setPage(1); setScanningSearch(false); }}
+          onClose={() => setScanningSearch(false)}
         />
       )}
 
@@ -202,6 +222,7 @@ function ResourceForm({
     });
     return f;
   });
+  const [scanField, setScanField] = useState<string | null>(null);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,6 +271,20 @@ function ResourceForm({
                     required={fld.required}
                     onChange={(e) => setForm({ ...form, [fld.name]: e.target.value })}
                   />
+                ) : fld.scan ? (
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={String(form[fld.name] ?? '')}
+                        required={fld.required}
+                        onChange={(e) => setForm({ ...form, [fld.name]: e.target.value })}
+                      />
+                    </div>
+                    <Button type="button" variant="outline" className="shrink-0" title="Scan barcode / QR" onClick={() => setScanField(fld.name)}>
+                      <ScanLine className="h-4 w-4" />
+                    </Button>
+                  </div>
                 ) : (
                   <Input
                     type={fld.type === 'number' ? 'number' : 'text'}
@@ -268,6 +303,13 @@ function ResourceForm({
           <Button type="submit" loading={saving}>Save</Button>
         </div>
       </form>
+      {scanField && (
+        <Scanner
+          title="Scan barcode / QR"
+          onDetected={(raw) => { setForm((f) => ({ ...f, [scanField]: parseGs1(raw).code })); setScanField(null); }}
+          onClose={() => setScanField(null)}
+        />
+      )}
     </Modal>
   );
 }

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, ScanLine } from 'lucide-react';
 import dayjs from 'dayjs';
 import toast from 'react-hot-toast';
 import { api, apiError } from '@/lib/api';
 import { Button, Card, Input, Select, Field, Modal } from '@/components/ui';
+import { Scanner } from '@/components/Scanner';
+import { parseGs1 } from '@/lib/gs1';
 import { DataTable } from '@/components/DataTable';
 import { PageHeader, Pagination } from '@/components/Page';
 import { formatINR, formatDate } from '@/lib/utils';
@@ -58,6 +60,24 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
   // Quick-add dialogs so a missing supplier/medicine can be created inline.
   const [addSupplier, setAddSupplier] = useState(false);
   const [addMedFor, setAddMedFor] = useState<number | null>(null);
+  const [scanFor, setScanFor] = useState<number | null>(null);
+
+  const handleScan = async (i: number, raw: string) => {
+    setScanFor(null);
+    const g = parseGs1(raw);
+    const patch: Partial<PLine> = {};
+    if (g.batch) patch.batchNo = g.batch;
+    if (g.expiry) patch.expiry = g.expiry;
+    // Try to match a medicine by the scanned code / GTIN (stored as barcode).
+    try {
+      const { data } = await api.get('/medicines', { params: { search: g.code, limit: 1 } });
+      const med = data.data?.[0] as { _id: string; gstRate?: number } | undefined;
+      if (med) { patch.medicineId = med._id; patch.gstRate = med.gstRate ?? 12; }
+      else toast('Scanned — set the medicine manually (no match for this code)', { icon: 'ℹ️' });
+    } catch { /* ignore lookup failure, still fill batch/expiry */ }
+    setLine(i, patch);
+    if (g.batch || g.expiry) toast.success('Batch / expiry filled from scan');
+  };
 
   const appendToCache = (key: string, item: unknown) =>
     qc.setQueryData([key, 'all'], (old: { data?: unknown[] } | undefined) =>
@@ -123,6 +143,7 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
                         {medicines?.data?.map((m: { _id: string; name: string }) => <option key={m._id} value={m._id}>{m.name}</option>)}
                       </Select>
                     </div>
+                    <Button type="button" variant="outline" className="shrink-0" title="Scan pack barcode / QR" onClick={() => setScanFor(i)}><ScanLine className="h-4 w-4" /></Button>
                     <Button type="button" variant="outline" className="shrink-0" title="Add new medicine" onClick={() => setAddMedFor(i)}><Plus className="h-4 w-4" /> New</Button>
                   </div>
                 </Field>
@@ -148,6 +169,9 @@ function NewPurchase({ onClose }: { onClose: () => void }) {
         <Button loading={save.isPending} onClick={() => save.mutate()} disabled={!supplierId || !invoiceNo}>Save & Stock-in</Button>
       </div>
 
+      {scanFor !== null && (
+        <Scanner title="Scan pack barcode / QR" onDetected={(raw) => handleScan(scanFor, raw)} onClose={() => setScanFor(null)} />
+      )}
       {addSupplier && <QuickAddSupplier onClose={() => setAddSupplier(false)} onCreated={handleSupplierCreated} />}
       {addMedFor !== null && (
         <QuickAddMedicine

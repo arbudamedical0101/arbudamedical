@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Trash2, Plus, Minus, X, Save, FilePlus, PauseCircle, Keyboard } from 'lucide-react';
+import { Search, Trash2, Plus, Minus, X, Save, FilePlus, PauseCircle, Keyboard, ScanLine } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { api, apiError, openAuthedPdf } from '@/lib/api';
 import { Button, Card, Input, Badge, Modal, Select, Field } from '@/components/ui';
+import { Scanner } from '@/components/Scanner';
+import { parseGs1 } from '@/lib/gs1';
 import { priceCart } from '@/lib/billing';
 import { formatINR, formatDate, expiryStatus } from '@/lib/utils';
 
@@ -45,6 +47,7 @@ export default function Billing() {
   const [doctorId, setDoctorId] = useState('');
   const [showPay, setShowPay] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showScan, setShowScan] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const printWinRef = useRef<Window | null>(null);
 
@@ -109,6 +112,22 @@ export default function Billing() {
       setQuery('');
       setResults([]);
       focusSearch();
+    } catch (e) {
+      toast.error(apiError(e));
+    }
+  };
+
+  const onScan = async (raw: string) => {
+    setShowScan(false);
+    const { code } = parseGs1(raw);
+    try {
+      const { data } = await api.get('/medicines', { params: { search: code, active: true, limit: 1 } });
+      const med = data.data?.[0] as MedResult | undefined;
+      if (!med) {
+        toast.error(`No medicine found for scanned code ${code}`);
+        return;
+      }
+      await addMedicine(med);
     } catch (e) {
       toast.error(apiError(e));
     }
@@ -206,15 +225,22 @@ export default function Billing() {
         <div className="lg:col-span-2">
           <Card className="!p-0">
             <div className="relative border-b border-slate-100 p-3">
-              <Search className="pointer-events-none absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-              <Input
-                ref={searchRef}
-                className="h-12 pl-11 text-base"
-                placeholder="Scan barcode or search medicine, then Enter…  (F1)"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={onSearchKey}
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    ref={searchRef}
+                    className="h-12 pl-11 text-base"
+                    placeholder="Scan barcode or search medicine, then Enter…  (F1)"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={onSearchKey}
+                  />
+                </div>
+                <Button variant="outline" className="h-12 shrink-0" onClick={() => setShowScan(true)} title="Scan with camera">
+                  <ScanLine className="h-5 w-5" /> <span className="hidden sm:inline">Scan</span>
+                </Button>
+              </div>
               {results.length > 0 && (
                 <div className="absolute left-3 right-3 z-20 mt-1 max-h-72 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg animate-fade-in">
                   {results.map((r, i) => (
@@ -356,6 +382,7 @@ export default function Billing() {
         />
       )}
       {showShortcuts && <ShortcutsModal onClose={() => setShowShortcuts(false)} />}
+      {showScan && <Scanner title="Scan medicine barcode" onDetected={onScan} onClose={() => setShowScan(false)} />}
     </div>
   );
 }
