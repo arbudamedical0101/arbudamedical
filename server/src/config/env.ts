@@ -22,7 +22,7 @@ export const env = {
     accessSecret: required('JWT_ACCESS_SECRET', 'dev-access-secret'),
     refreshSecret: required('JWT_REFRESH_SECRET', 'dev-refresh-secret'),
     accessExpires: process.env.JWT_ACCESS_EXPIRES ?? '15m',
-    refreshExpires: process.env.JWT_REFRESH_EXPIRES ?? '7d',
+    refreshExpires: process.env.JWT_REFRESH_EXPIRES ?? '30m',
   },
   uploadDir: path.resolve(process.cwd(), process.env.UPLOAD_DIR ?? 'uploads'),
   seed: {
