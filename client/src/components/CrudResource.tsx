@@ -5,7 +5,9 @@ import toast from 'react-hot-toast';
 import { api, apiError } from '@/lib/api';
 import { Button, Card, Input, Select, Textarea, Field, Modal } from './ui';
 import { Scanner } from './Scanner';
+import { StripOcr } from './StripOcr';
 import { parseGs1 } from '@/lib/gs1';
+import type { StripFields } from '@/lib/stripParse';
 import { DataTable, Column } from './DataTable';
 import { PageHeader, Pagination } from './Page';
 
@@ -32,10 +34,11 @@ interface Props<T extends { _id: string }> {
   searchPlaceholder?: string;
   extraActions?: (row: T) => React.ReactNode;
   scanSearch?: boolean; // show a camera-scan button next to the search box
+  photoOcr?: boolean; // show "Fill from strip photo" (on-device OCR) in the form
 }
 
 export function CrudResource<T extends { _id: string }>({
-  title, subtitle, endpoint, columns, fields, canManage, canDelete, searchPlaceholder, extraActions, scanSearch,
+  title, subtitle, endpoint, columns, fields, canManage, canDelete, searchPlaceholder, extraActions, scanSearch, photoOcr,
 }: Props<T>) {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
@@ -168,6 +171,7 @@ export function CrudResource<T extends { _id: string }>({
           fields={fields}
           initial={editing ?? undefined}
           saving={save.isPending}
+          photoOcr={photoOcr}
           onClose={() => {
             setEditing(null);
             setCreating(false);
@@ -206,7 +210,7 @@ export function CrudResource<T extends { _id: string }>({
 }
 
 function ResourceForm({
-  title, fields, initial, onClose, onSubmit, saving,
+  title, fields, initial, onClose, onSubmit, saving, photoOcr,
 }: {
   title: string;
   fields: FormField[];
@@ -214,6 +218,7 @@ function ResourceForm({
   onClose: () => void;
   onSubmit: (payload: Record<string, unknown>) => void;
   saving: boolean;
+  photoOcr?: boolean;
 }) {
   const [form, setForm] = useState<Record<string, unknown>>(() => {
     const f: Record<string, unknown> = {};
@@ -223,6 +228,20 @@ function ResourceForm({
     return f;
   });
   const [scanField, setScanField] = useState<string | null>(null);
+  const [showOcr, setShowOcr] = useState(false);
+
+  // Apply OCR-extracted values to any form field with a matching name.
+  const applyOcr = (f: StripFields) => {
+    const names = new Set(fields.map((x) => x.name));
+    setForm((prev) => {
+      const next = { ...prev };
+      (Object.keys(f) as (keyof StripFields)[]).forEach((k) => {
+        if (names.has(k) && f[k] != null && f[k] !== '') next[k] = f[k];
+      });
+      return next;
+    });
+    setShowOcr(false);
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,6 +257,14 @@ function ResourceForm({
 
   return (
     <Modal open onClose={onClose} title={title} wide>
+      {photoOcr && (
+        <div className="mb-4">
+          <Button type="button" variant="outline" className="w-full" onClick={() => setShowOcr(true)}>
+            📷 Fill from strip photo
+          </Button>
+          <p className="mt-1 text-center text-xs text-slate-400">Reads the strip on your device — check the values before saving.</p>
+        </div>
+      )}
       <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {fields.map((fld) => (
           <div key={fld.name} className={fld.type === 'textarea' ? 'sm:col-span-2' : ''}>
@@ -310,6 +337,7 @@ function ResourceForm({
           onClose={() => setScanField(null)}
         />
       )}
+      {showOcr && <StripOcr onExtracted={applyOcr} onClose={() => setShowOcr(false)} />}
     </Modal>
   );
 }

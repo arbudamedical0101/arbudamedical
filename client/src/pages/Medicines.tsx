@@ -30,6 +30,7 @@ export default function Medicines() {
       canManage={can('pharmacist')}
       canDelete={can('admin')}
       scanSearch
+      photoOcr
       searchPlaceholder="Search by name, composition or barcode…"
       columns={[
         {
