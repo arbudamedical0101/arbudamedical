@@ -68,6 +68,7 @@ export default function Medicines() {
         { name: 'hsnCode', label: 'HSN Code' },
         { name: 'gstRate', label: 'GST %', type: 'number', required: true, defaultValue: 12, step: '0.01' },
         { name: 'packSize', label: 'Pack size', hint: 'e.g. 10 tablets' },
+        { name: 'unitsPerPack', label: 'Tablets per strip', type: 'number', defaultValue: 1, hint: 'For loose sale — tablets/pieces in one strip (e.g. 10)' },
         {
           name: 'unit',
           label: 'Unit',

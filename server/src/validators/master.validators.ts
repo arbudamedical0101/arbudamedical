@@ -9,6 +9,7 @@ export const medicineSchema = z.object({
   hsnCode: z.string().optional(),
   gstRate: z.number().min(0).max(100),
   packSize: z.string().optional(),
+  unitsPerPack: z.number().min(1).default(1),
   unit: z.string().default('strip'),
   barcode: z.string().optional(),
   reorderLevel: z.number().min(0).default(10),

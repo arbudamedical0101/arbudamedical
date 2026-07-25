@@ -10,7 +10,9 @@ export interface ISaleItem {
   expiry: Date;
   hsnCode?: string;
   schedule: string;
-  qty: number;
+  qty: number; // in strips/packs (may be fractional for loose per-tablet sales)
+  saleUnit?: 'strip' | 'tablet'; // how it was sold/priced for display
+  unitsPerPack?: number; // tablets per strip snapshot (for tablet display)
   mrp: number;
   rate: number; // sale rate (GST-inclusive)
   gstRate: number;
@@ -58,7 +60,9 @@ const saleItemSchema = new Schema<ISaleItem>(
     expiry: { type: Date, required: true },
     hsnCode: { type: String },
     schedule: { type: String, required: true },
-    qty: { type: Number, required: true, min: 1 },
+    qty: { type: Number, required: true, min: 0 },
+    saleUnit: { type: String, enum: ['strip', 'tablet'], default: 'strip' },
+    unitsPerPack: { type: Number, default: 1 },
     mrp: { type: Number, required: true, min: 0 },
     rate: { type: Number, required: true, min: 0 },
     gstRate: { type: Number, required: true, min: 0 },

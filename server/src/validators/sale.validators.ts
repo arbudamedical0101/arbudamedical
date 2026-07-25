@@ -3,7 +3,10 @@ import { z } from 'zod';
 const saleItemSchema = z.object({
   medicineId: z.string().min(1),
   batchId: z.string().min(1).optional(), // if omitted, FEFO selects the batch
-  qty: z.number().int().positive(),
+  // qty is in strips (packs); may be fractional when a loose (per-tablet) sale
+  // is converted to strips, e.g. 3 tablets of a 10-tab strip => 0.3.
+  qty: z.number().positive(),
+  saleUnit: z.enum(['strip', 'tablet']).optional(),
   discountPct: z.number().min(0).max(100).default(0),
 });
 

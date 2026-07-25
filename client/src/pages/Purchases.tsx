@@ -196,6 +196,7 @@ function QuickAddMedicine({ onClose, onCreated }: { onClose: () => void; onCreat
   const [schedule, setSchedule] = useState('OTC');
   const [gstRate, setGstRate] = useState('12');
   const [unit, setUnit] = useState('strip');
+  const [unitsPerPack, setUnitsPerPack] = useState('1');
 
   const save = useMutation({
     mutationFn: async () => {
@@ -204,6 +205,7 @@ function QuickAddMedicine({ onClose, onCreated }: { onClose: () => void; onCreat
         schedule,
         gstRate: Number(gstRate) || 0,
         unit: unit.trim() || 'strip',
+        unitsPerPack: Math.max(1, Number(unitsPerPack) || 1),
       })).data.data as { _id: string; name: string; gstRate: number };
     },
     onSuccess: (m) => { toast.success('Medicine added'); onCreated(m); },
@@ -225,13 +227,16 @@ function QuickAddMedicine({ onClose, onCreated }: { onClose: () => void; onCreat
           </Field>
           <Field label="GST %"><Input type="number" step="0.01" value={gstRate} onChange={(e) => setGstRate(e.target.value)} /></Field>
         </div>
-        <Field label="Unit">
-          <Select value={unit} onChange={(e) => setUnit(e.target.value)}>
-            <option value="strip">Strip</option>
-            <option value="syrup">Syrup</option>
-            <option value="piece">Piece</option>
-          </Select>
-        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Unit">
+            <Select value={unit} onChange={(e) => setUnit(e.target.value)}>
+              <option value="strip">Strip</option>
+              <option value="syrup">Syrup</option>
+              <option value="piece">Piece</option>
+            </Select>
+          </Field>
+          <Field label="Tablets per strip" hint="For loose sale (e.g. 10)"><Input type="number" min="1" value={unitsPerPack} onChange={(e) => setUnitsPerPack(e.target.value)} /></Field>
+        </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button loading={save.isPending} onClick={() => save.mutate()} disabled={!name.trim()}>Add medicine</Button>

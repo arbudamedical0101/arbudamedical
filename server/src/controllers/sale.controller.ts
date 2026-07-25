@@ -66,7 +66,7 @@ export const createSale = asyncHandler(async (req: Request, res: Response) => {
     patientName?: string;
     patientPhone?: string;
     billDiscountPct: number;
-    items: { medicineId: string; batchId?: string; qty: number; discountPct: number }[];
+    items: { medicineId: string; batchId?: string; qty: number; saleUnit?: 'strip' | 'tablet'; discountPct: number }[];
     payments: { mode: PaymentMode; amount: number; reference?: string }[];
     allowExpired?: boolean;
   };
@@ -145,6 +145,8 @@ export const createSale = asyncHandler(async (req: Request, res: Response) => {
         hsnCode: r.medicine.hsnCode,
         schedule: r.medicine.schedule,
         qty: r.qty,
+        saleUnit: body.items[i].saleUnit ?? 'strip',
+        unitsPerPack: r.medicine.unitsPerPack ?? 1,
         mrp: r.batch.mrp,
         rate: p.rate,
         gstRate: p.gstRate,

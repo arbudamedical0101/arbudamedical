@@ -12,6 +12,7 @@ export interface IMedicine extends Document {
   hsnCode?: string;
   gstRate: number; // percent, e.g. 12
   packSize?: string; // e.g. "10 tablets"
+  unitsPerPack: number; // tablets/pieces in one strip/pack — enables loose (per-tablet) sale
   unit: string; // e.g. "strip", "bottle", "tablet"
   barcode?: string;
   reorderLevel: number;
@@ -31,6 +32,7 @@ const medicineSchema = new Schema<IMedicine>(
     hsnCode: { type: String, trim: true },
     gstRate: { type: Number, required: true, min: 0, max: 100, default: 12 },
     packSize: { type: String, trim: true },
+    unitsPerPack: { type: Number, default: 1, min: 1 },
     unit: { type: String, trim: true, default: 'strip' },
     barcode: { type: String, trim: true },
     reorderLevel: { type: Number, default: 10, min: 0 },

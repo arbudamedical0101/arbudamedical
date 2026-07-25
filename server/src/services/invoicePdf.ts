@@ -65,8 +65,13 @@ export function buildInvoicePdf(sale: ISale, settings: ISettings, stream: NodeJS
     doc.text(it.batchNo, cols.batch, y, { width: 65 });
     doc.text(dayjs(it.expiry).format('MM/YY'), cols.exp, y);
     doc.text(it.hsnCode || '-', cols.hsn, y, { width: 40 });
-    doc.text(String(it.qty), cols.qty, y);
-    doc.text(money(it.rate), cols.rate, y);
+    // Loose (per-tablet) sales are stored in strips; show them as tablets.
+    const upp = it.unitsPerPack && it.unitsPerPack > 0 ? it.unitsPerPack : 1;
+    const isTablet = it.saleUnit === 'tablet' && upp > 1;
+    const dispQty = isTablet ? `${Math.round(it.qty * upp)} tab` : String(it.qty);
+    const dispRate = isTablet ? it.rate / upp : it.rate;
+    doc.text(dispQty, cols.qty, y);
+    doc.text(money(dispRate), cols.rate, y);
     doc.text(String(it.gstRate), cols.gst, y);
     doc.text(money(it.lineTotal), cols.amt, y, { width: 55, align: 'right' });
     doc.moveDown(0.5);
